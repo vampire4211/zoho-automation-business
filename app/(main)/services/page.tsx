@@ -1,6 +1,32 @@
 'use client';
 
+import Link from 'next/link';
+import { generatePageMetadata } from '@/lib/metadata';
+import FAQ from '@/app/components/FAQ';
+
+// Note: Can't export metadata in client components, but adding this for when converted to server component
+// export const metadata = generatePageMetadata('services');
+
 export default function ServicesPage() {
+  const faqItems = [
+    {
+      question: "How much does a typical automation project cost?",
+      answer: "Our starter automation packages begin at $900. Complex custom enterprise solutions are quoted based on specific requirements. We always provide a transparent project roadmap and fixed pricing before beginning work."
+    },
+    {
+      question: "How long does it take to implement?",
+      answer: "Simple workflows can be live in 3-5 days. Comprehensive business operating systems typically take 3-6 weeks to fully architect, build, and test. We prioritize quick wins to show ROI immediately."
+    },
+    {
+      question: "Do I need technical knowledge to manage the automations?",
+      answer: "No. We build 'clear' architectures designed for business users. We provide training videos and documentation. Plus, we offer ongoing support packages if you prefer hands-off maintenance."
+    },
+    {
+      question: "Can you integrate with my existing software?",
+      answer: "Yes, we specialize in connecting disparate tools. Whether you use Zoho, Salesforce, HubSpot, QuickBooks, or custom internal tools, we can likely integrate them using APIs and webhooks."
+    }
+  ];
+
   const services = [
     {
       id: 'A-01',

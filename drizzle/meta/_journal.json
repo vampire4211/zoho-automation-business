@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1769704975828,
+      "tag": "0000_next_flatman",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1769705573896,
+      "tag": "0001_shallow_stingray",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1769713531912,
+      "tag": "0002_tidy_whistler",
+      "breakpoints": true
+    }
+  ]
+}

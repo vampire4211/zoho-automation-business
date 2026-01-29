@@ -1,9 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { countryCodes, findCountryByCode, validateEmail, validatePhone } from '@/lib/utils';
+// Note: Can't export metadata in client components, but adding this for when converted to server component
+// import { generatePageMetadata } from '@/lib/metadata';
+// export const metadata = generatePageMetadata('contact');
 
-export default function ContactPage() {
+function ContactContent() {
   const searchParams = useSearchParams();
 
   const [formData, setFormData] = useState({
@@ -15,6 +19,18 @@ export default function ContactPage() {
     services: [] as string[],
     description: ''
   });
+
+  const [errors, setErrors] = useState({
+    email: '',
+    secondaryEmail: '',
+    phone: '',
+    whatsapp: ''
+  });
+
+  const [phoneCountryCode, setPhoneCountryCode] = useState('+91');
+  const [whatsappCountryCode, setWhatsappCountryCode] = useState('+91');
+  const [showPhoneDropdown, setShowPhoneDropdown] = useState(false);
+  const [showWhatsappDropdown, setShowWhatsappDropdown] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
@@ -32,6 +48,66 @@ export default function ContactPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+
+    // Clear error when user types
+    if (name === 'email' || name === 'secondaryEmail' || name === 'phone' || name === 'whatsapp') {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'phone' | 'whatsapp') => {
+    let value = e.target.value;
+
+    // Auto-detect country code if user types +
+    if (value.startsWith('+')) {
+      const detected = findCountryByCode(value);
+      if (detected) {
+        if (field === 'phone') {
+          setPhoneCountryCode(detected.code);
+        } else {
+          setWhatsappCountryCode(detected.code);
+        }
+      }
+    } else if (!value.startsWith('+') && value.length > 0) {
+      // Add country code if not present
+      const code = field === 'phone' ? phoneCountryCode : whatsappCountryCode;
+      value = code + ' ' + value;
+    }
+
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setErrors(prev => ({ ...prev, [field]: '' }));
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors = { email: '', secondaryEmail: '', phone: '', whatsapp: '' };
+    let isValid = true;
+
+    // Validate primary email
+    if (!validateEmail(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+      isValid = false;
+    }
+
+    // Validate secondary email if provided
+    if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
+      newErrors.secondaryEmail = 'Please enter a valid email address';
+      isValid = false;
+    }
+
+    // Validate phone
+    if (!validatePhone(formData.phone)) {
+      newErrors.phone = 'Please enter a valid phone number with country code';
+      isValid = false;
+    }
+
+    // Validate WhatsApp if provided
+    if (formData.whatsapp && !validatePhone(formData.whatsapp)) {
+      newErrors.whatsapp = 'Please enter a valid phone number with country code';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
   };
 
   const handleCheckboxChange = (service: string) => {
@@ -58,14 +134,30 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setSubmitMessage('');
 
-    try {
-      // Simulate API call - replace with actual API endpoint
-      await new Promise(resolve => setTimeout(resolve, 1500));
+    // Validate form
+    if (!validateForm()) {
+      setSubmitMessage('Please fix the errors before submitting.');
+      return;
+    }
 
-      console.log('Form submitted:', formData);
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit form');
+      }
+
+      const data = await response.json();
       setSubmitMessage('Thank you for contacting us! We will get back to you soon.');
 
       // Reset form
@@ -78,7 +170,9 @@ export default function ContactPage() {
         services: [],
         description: ''
       });
+      setErrors({ email: '', secondaryEmail: '', phone: '', whatsapp: '' });
     } catch (error) {
+      console.error('Error submitting form:', error);
       setSubmitMessage('Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -131,9 +225,10 @@ export default function ContactPage() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-lg text-deep-navy dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  className={`w-full px-4 py-3 bg-white dark:bg-surface-dark border ${errors.email ? 'border-red-500' : 'border-slate-200 dark:border-border-dark'} rounded-lg text-deep-navy dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all`}
                   placeholder="your@email.com"
                 />
+                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
               </div>
               <div>
                 <label htmlFor="secondaryEmail" className="block text-deep-navy dark:text-white font-medium mb-2">
@@ -145,9 +240,10 @@ export default function ContactPage() {
                   name="secondaryEmail"
                   value={formData.secondaryEmail}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-lg text-deep-navy dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  className={`w-full px-4 py-3 bg-white dark:bg-surface-dark border ${errors.secondaryEmail ? 'border-red-500' : 'border-slate-200 dark:border-border-dark'} rounded-lg text-deep-navy dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all`}
                   placeholder="secondary@email.com"
                 />
+                {errors.secondaryEmail && <p className="text-red-500 text-sm mt-1">{errors.secondaryEmail}</p>}
               </div>
             </div>
 
@@ -157,30 +253,96 @@ export default function ContactPage() {
                 <label htmlFor="phone" className="block text-deep-navy dark:text-white font-medium mb-2">
                   Phone Number <span className="text-primary">*</span>
                 </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-lg text-deep-navy dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                  placeholder="+1 (555) 000-0000"
-                />
+                <div className="relative flex gap-2">
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowPhoneDropdown(!showPhoneDropdown)}
+                      className="h-full px-3 bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-lg text-deep-navy dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      {countryCodes.find(c => c.code === phoneCountryCode)?.flag || '🌐'} {phoneCountryCode}
+                    </button>
+                    {showPhoneDropdown && (
+                      <div className="absolute z-10 mt-1 w-64 max-h-60 overflow-auto bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-lg shadow-lg">
+                        {countryCodes.map((country) => (
+                          <button
+                            key={country.code + country.country}
+                            type="button"
+                            onClick={() => {
+                              setPhoneCountryCode(country.code);
+                              setShowPhoneDropdown(false);
+                              setFormData(prev => ({ ...prev, phone: country.code + ' ' }));
+                            }}
+                            className="w-full px-4 py-2 text-left hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"
+                          >
+                            <span>{country.flag}</span>
+                            <span className="flex-1">{country.name}</span>
+                            <span className="text-slate-500">{country.code}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={(e) => handlePhoneChange(e, 'phone')}
+                    onFocus={() => setShowPhoneDropdown(false)}
+                    required
+                    className={`flex-1 px-4 py-3 bg-white dark:bg-surface-dark border ${errors.phone ? 'border-red-500' : 'border-slate-200 dark:border-border-dark'} rounded-lg text-deep-navy dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all`}
+                    placeholder="+91 1234567890"
+                  />
+                </div>
+                {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
               </div>
               <div>
                 <label htmlFor="whatsapp" className="block text-deep-navy dark:text-white font-medium mb-2">
                   WhatsApp Number
                 </label>
-                <input
-                  type="tel"
-                  id="whatsapp"
-                  name="whatsapp"
-                  value={formData.whatsapp}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-lg text-deep-navy dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                  placeholder="+1 (555) 000-0000"
-                />
+                <div className="relative flex gap-2">
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowWhatsappDropdown(!showWhatsappDropdown)}
+                      className="h-full px-3 bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-lg text-deep-navy dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      {countryCodes.find(c => c.code === whatsappCountryCode)?.flag || '🌐'} {whatsappCountryCode}
+                    </button>
+                    {showWhatsappDropdown && (
+                      <div className="absolute z-10 mt-1 w-64 max-h-60 overflow-auto bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-lg shadow-lg">
+                        {countryCodes.map((country) => (
+                          <button
+                            key={country.code + country.country}
+                            type="button"
+                            onClick={() => {
+                              setWhatsappCountryCode(country.code);
+                              setShowWhatsappDropdown(false);
+                              setFormData(prev => ({ ...prev, whatsapp: country.code + ' ' }));
+                            }}
+                            className="w-full px-4 py-2 text-left hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"
+                          >
+                            <span>{country.flag}</span>
+                            <span className="flex-1">{country.name}</span>
+                            <span className="text-slate-500">{country.code}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    type="tel"
+                    id="whatsapp"
+                    name="whatsapp"
+                    value={formData.whatsapp}
+                    onChange={(e) => handlePhoneChange(e, 'whatsapp')}
+                    onFocus={() => setShowWhatsappDropdown(false)}
+                    className={`flex-1 px-4 py-3 bg-white dark:bg-surface-dark border ${errors.whatsapp ? 'border-red-500' : 'border-slate-200 dark:border-border-dark'} rounded-lg text-deep-navy dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all`}
+                    placeholder="+91 1234567890"
+                  />
+                </div>
+                {errors.whatsapp && <p className="text-red-500 text-sm mt-1">{errors.whatsapp}</p>}
               </div>
             </div>
 
@@ -274,5 +436,17 @@ export default function ContactPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ContactPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white dark:bg-background-dark py-16 px-4 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <ContactContent />
+    </Suspense>
   );
 }
