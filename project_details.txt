@@ -1,0 +1,188 @@
+DETAILED PROJECT ANALYSIS: Zoho Automation Business
+===================================================
+
+1. OVERVIEW
+-----------
+Framework: Next.js 15+ (App Router)
+Language: TypeScript
+Database: SQLite (via Turso/LibSQL)
+ORM: Drizzle ORM
+Styling: Tailwind CSS
+Analytics: Custom-built, privacy-first tracking
+
+2. PAGE-BY-PAGE ANALYSIS
+------------------------
+
+### A. Home Page (/)
+   - **Frontend**: 
+     - Server Component (`app/(main)/page.tsx`).
+     - Static content. No dynamic data fetching.
+     - Uses `getOrganizationSchema` and `getServiceSchema` for SEO (JSON-LD).
+     - Sections: Hero, Stats (60% Task Reduction, etc.), Methodology (Audit, Build, Scale), CTA.
+   - **Backend**: None directly.
+   - **Database**: None.
+
+### B. About Us (/about)
+   - **Frontend**:
+     - Server Component (`app/(main)/about/page.tsx`).
+     - Uses `Suspense` with a Skeleton loader (`AboutPageSkeleton`).
+     - Renders a zig-zag layout of content sections.
+   - **Backend (Data Fetching)**:
+     - Fetches data directly in the component using `db.select()` from Drizzle.
+     - Query is cached using React `cache()`.
+     - Revalidation: Every 24 hours (`revalidate = 86400`).
+   - **Database**:
+     - Table: `aboutSections`
+     - Columns Used: `title`, `content`, `imageData` (Base64), `reverse`.
+     - Query: `SELECT * FROM about_sections ORDER BY displayOrder ASC`
+
+### C. Blog (/blog)
+   - **Frontend**:
+     - Server Component (`app/(main)/blog/page.tsx`).
+     - Renders a grid of blog post cards.
+     - Features localized loading states via `Suspense`.
+   - **Backend (Data Fetching)**:
+     - Direct DB query cached via `cache()`.
+     - Revalidation: Every 1 hour (`revalidate = 3600`).
+   - **Database**:
+     - Table: `posts`
+     - Columns Used: `id`, `slug`, `title`, `summary`, `featuredImage`, `category`, `readTime`, `viewCount`, `publishedAt`.
+     - Query: `SELECT * FROM posts ORDER BY publishedAt DESC`
+
+### D. Portfolio (/portfolio)
+   - **Frontend**:
+     - Server Component (`app/(main)/portfolio/page.tsx`).
+     - Displays functionality to filter projects (logic handled in render loop).
+     - Renders cards with tags, tech stack (JSON parsed), and ROI metrics.
+   - **Backend (Data Fetching)**:
+     - Direct DB query cached via `cache()`.
+     - Revalidation: Every 1 hour (`revalidate = 3600`).
+   - **Database**:
+     - Table: `projects`
+     - Columns Used: `id`, `slug`, `title`, `client`, `description`, `featuredImage`, `tags` (JSON), `technologies` (JSON), `roi`, `roiLabel`.
+     - Query: `SELECT * FROM projects ORDER BY createdAt DESC`
+
+### E. Contact (/contact)
+   - **Frontend**:
+     - Client Component (`'use client'`).
+     - Manages complex form state (Name, Email, Phone, WhatsApp, Service Selection, Description).
+     - Includes validation logic (email regex, phone country codes).
+     - Auto-selects service based on `?service=` URL parameter.
+   - **Backend**:
+     - POST request to `/api/contact`.
+   - **Database**:
+     - Table: `formSubmissions`
+     - Operation: INSERT new submission data.
+
+### F. Careers (/careers)
+   - **Frontend**:
+     - Client Component (`'use client'`).
+     - Hardcoded list of job positions (Zoho Developer, n8n Developer, etc.).
+     - Application form overlay/section.
+   - **Backend**:
+     - POST request to `/api/careers`.
+   - **Database**:
+     - Table: `jobApplications`
+     - Operation: INSERT application data (positions stored as JSON array).
+
+### G. Services (/services)
+   - **Frontend**:
+     - Client Component (`'use client'`).
+     - Hardcoded `services` array (Starter, Growth, Smart Automation, etc.).
+     - Renders a comparison table with "Included" / "Not Included" lists.
+     - Contains an FAQ section.
+   - **Backend**: None. Data is hardcoded in the component.
+   - **Database**: None.
+
+### H. Admin Dashboard (/admin)
+   - **Frontend**:
+     - Server Component (`app/admin/page.tsx`).
+     - Displays Stats Cards (Total Visitors, Views, Avg Views/Visit).
+     - Displays "Recent Sessions" table.
+     - Displays "Recent Page Views" table.
+   - **Backend (Data Fetching)**:
+     - Multiple parallel DB queries.
+   - **Database**:
+     - Tables: `visitorSessions`, `pageViews`.
+     - Queries:
+       1. Recent Sessions: `SELECT * FROM visitor_sessions ORDER BY lastVisit DESC LIMIT 50`
+       2. Recent Views: `SELECT * FROM page_views ORDER BY timestamp DESC LIMIT 50`
+       3. Aggregates: `COUNT(*)` for total visitors and views.
+
+3. COMPONENT ARCHITECTURE
+-------------------------
+Key Shared Components:
+- **AnalyticsTracker**: Client component likely mounted in `layout.tsx` (checks middleware or `useEffect` to trigger tracking).
+- **FAQ**: Reusable FAQ accordion used in Services page.
+- **Navbar/Footer**: Standard layout wrappers.
+
+4. DATABASE SCHEMA (Drizzle)
+----------------------------
+**`posts`** (Blog)
+- Stores Markdown/HTML content + Base64 images.
+- Fields: `slug`, `title`, `content`, `tags`, `galleryImages`.
+
+**`projects`** (Portfolio)
+- Stores detailed case study stats.
+- Fields: `roi`, `challenges`, `solutions`, `technologies`.
+
+**`visitorSessions`** (Analytics)
+- The core of the tracking system. Unique `visitorId` (UUID).
+- Fields: `ipHash`, `country`, `city`, `sessionDuration`, `totalVisits`.
+
+**`pageViews`** (Analytics)
+- Granular hit data.
+- Fields: `path`, `referrer`, `device`, `timestamp`.
+
+**`visitHistory`** (Analytics)
+- Archival table. When a session expires (>30m inactivity), it moves here.
+- Fields: `sessionStart`, `sessionEnd`, `pagesViewed`.
+
+5. HIDDEN/BACKGROUND FEATURES
+-----------------------------
+- **Middleware Tracking**:
+  - `middleware.ts` intercepts requests.
+  - Checks for `visitor_id` cookie. If missing, generates one.
+  - Triggers a non-blocking fetch to `/api/analytics/track` to log the view.
+- **Heartbeat Mechanism**:
+  - The client (likely `AnalyticsTracker`) pings `/api/analytics/heartbeat` periodically.
+  - Updates `sessionDuration` and `lastVisit` in `visitorSessions`.
+  - Automatically archives sessions if `lastVisit` > 30 mins ago.
+- **Image Optimization**:
+  - Images for blog/portfolio are stored as Base64 strings in the DB, not external storage. This simplifies deployment but increases DB size.
+
+6. RECENT UPDATES (2026-01-31)
+----------------------------
+
+### A. Admin Protection
+   - **Component**: components/admin/AdminGate.tsx
+   - **Functionality**: 
+     - Client-side modal overlay protecting all /admin/* routes.
+     - Requires Credential Check (ID: 9499888395@J, Pass: JP@88).
+     - Persists access via sessionStorage.
+   - **Integration**: Wrapped in App/admin/layout.tsx.
+
+### B. Rate Limiting
+   - **Module**: lib/rate-limit.ts
+   - **Mechanism**: 
+     - In-memory Map data structure.
+     - **Safety**: Includes automatic garbage collection (TTL 60s) and size capping (5000 IPs) to prevent memory leaks/DoS.
+   - **Protected Endpoints**:
+     - POST /api/contact: Limits form submissions.
+     - POST /api/newsletter/subscribe: Limits subscription attempts.
+   - **Response**: Returns 429 Too Many Requests if limit exceeded (5 requests/min).
+
+### C. Admin UI Overhaul
+   - **Page**: app/admin/page.tsx
+   - **Design**: 
+     - Premium 'Glassmorphism' aesthetic.
+     - Dark/Light mode compatible with Tailwind gradients.
+     - Responsive charts/stats cards with inline icons.
+   - **Features**: Live activity table, Country flags visualization.
+
+### D. Legal Pages
+   - **Page**: app/terms/page.tsx
+   - **Route**: /terms
+   - **Content**: Explicitly states data collection policies (Traffic Data, Form Submissions).
+   - **Footer Link**: Added to components/Footer.tsx.
+

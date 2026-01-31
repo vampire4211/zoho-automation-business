@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 
 export default function NewsletterPopup() {
     const [showPopup, setShowPopup] = useState(false);
@@ -10,11 +10,9 @@ export default function NewsletterPopup() {
     const [success, setSuccess] = useState(false);
 
     useEffect(() => {
-        // Check if user dismissed popup or already subscribed
-        const dismissed = localStorage.getItem('newsletter_dismissed');
+        // Check if user already subscribed
         const subscribed = localStorage.getItem('newsletter_subscribed');
-
-        if (dismissed || subscribed) return;
+        if (subscribed) return;
 
         // Check if marketing cookies are accepted
         const consent = localStorage.getItem('cookie_consent');
@@ -23,8 +21,29 @@ export default function NewsletterPopup() {
         const { marketing } = JSON.parse(consent);
         if (!marketing) return;
 
+        // Check dismissal timestamp
+        const dismissed = localStorage.getItem('newsletter_dismissed');
+        const REAPPEAR_TIME = 30 * 1000; // 30 seconds
+
+        const show = () => setShowPopup(true);
+
+        if (dismissed) {
+            const timeSinceDismissed = Date.now() - new Date(dismissed).getTime();
+            if (timeSinceDismissed < REAPPEAR_TIME) {
+                // If dismissed recently, schedule it to reappear when the 30s is up
+                const remainingTime = REAPPEAR_TIME - timeSinceDismissed;
+                const timer = setTimeout(show, remainingTime);
+                return () => clearTimeout(timer);
+            } else {
+                // If 30s passed, show immediately (or you could add a small delay for UX)
+                const timer = setTimeout(show, 1000);
+                return () => clearTimeout(timer);
+            }
+        }
+
+        // First time visit (or storage cleared)
         // Show popup after 10 seconds or on scroll
-        const timer = setTimeout(() => setShowPopup(true), 10000);
+        const timer = setTimeout(show, 10000);
 
         const handleScroll = () => {
             if (window.scrollY > 500) {
@@ -41,31 +60,31 @@ export default function NewsletterPopup() {
         };
     }, []);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
         try {
-            // Get visitor ID
-            const visitorId = document.cookie
-                .split('; ')
-                .find(row => row.startsWith('visitor_id='))
-                ?.split('=')[1];
+            const visitorId = localStorage.getItem('visitor_id');
 
-            const response = await fetch('/api/newsletter/subscribe', {
+            const res = await fetch('/api/newsletter/subscribe', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, name, visitorId }),
             });
 
-            if (response.ok) {
+            if (res.ok) {
                 setSuccess(true);
                 localStorage.setItem('newsletter_subscribed', 'true');
-                setTimeout(() => setShowPopup(false), 3000);
+                // Optional: Close popup automatically after a few seconds
+                setTimeout(() => {
+                    setShowPopup(false);
+                }, 3000);
+            } else {
+                console.error('Failed to subscribe');
             }
         } catch (error) {
-            console.error('Newsletter subscription error:', error);
-            alert('Something went wrong. Please try again.');
+            console.error('Error submitting newsletter form:', error);
         } finally {
             setLoading(false);
         }
@@ -73,10 +92,8 @@ export default function NewsletterPopup() {
 
     const handleDismiss = () => {
         setShowPopup(false);
-        // Don't show again for 30 days
-        const expiryDate = new Date();
-        expiryDate.setDate(expiryDate.getDate() + 30);
-        localStorage.setItem('newsletter_dismissed', expiryDate.toISOString());
+        // Record dismissal time to show again in 30 seconds
+        localStorage.setItem('newsletter_dismissed', new Date().toISOString());
     };
 
     if (!showPopup) return null;

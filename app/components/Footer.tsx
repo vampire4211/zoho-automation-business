@@ -52,7 +52,7 @@ export default function Footer() {
                     </p>
                     <div className="flex gap-6">
                         <Link className="text-xs text-slate-gray dark:text-slate-400 hover:text-primary" href="#">Privacy Policy</Link>
-                        <Link className="text-xs text-slate-gray dark:text-slate-400 hover:text-primary" href="#">Terms of Service</Link>
+                        <Link className="text-xs text-slate-gray dark:text-slate-400 hover:text-primary" href="/terms">Terms and Conditions</Link>
                     </div>
                 </div>
             </div>
