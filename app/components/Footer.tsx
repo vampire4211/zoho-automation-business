@@ -12,7 +12,7 @@ export default function Footer() {
                                     <path clipRule="evenodd" d="M24 4L44 24L24 44L4 24L24 4ZM24 16L32 24L24 32L16 24L24 16Z" fill="currentColor" fillRule="evenodd"></path>
                                 </svg>
                             </div>
-                            <span className="text-lg font-bold tracking-tight text-deep-navy dark:text-white">The Clear Architect</span>
+                            <span className="text-lg font-bold tracking-tight text-deep-navy dark:text-white">J&P Business Automation</span>
                         </div>
                         <p className="text-slate-gray dark:text-slate-400 text-sm leading-relaxed">
                             Engineering clarity from chaos. We build the automated systems that power tomorrow&apos;s market leaders.
@@ -44,11 +44,25 @@ export default function Footer() {
                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"></path></svg>
                             </Link>
                         </div>
+                        <div className="flex flex-col gap-2 mt-2">
+                            <a href="mailto:support@jp-business-automation.in" className="text-sm font-medium text-primary hover:underline break-all">
+                                support@jp-business-automation.in
+                            </a>
+                            <a href="mailto:info@jp-business-automation.in" className="text-sm font-medium text-primary hover:underline break-all">
+                                info@jp-business-automation.in
+                            </a>
+                            <p className="text-sm text-slate-gray dark:text-slate-400">
+                                For help, support, info, career
+                            </p>
+                            <p className="text-xs text-slate-gray dark:text-slate-400">
+                                Any doubt or way to contact us is this mail
+                            </p>
+                        </div>
                     </div>
                 </div>
                 <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-slate-200 dark:border-border-dark gap-4">
                     <p className="text-xs text-slate-gray dark:text-slate-400">
-                        © 2024 The Clear Architect. All rights reserved.
+                        © 2024 J&P Business Automation. All rights reserved.
                     </p>
                     <div className="flex gap-6">
                         <Link className="text-xs text-slate-gray dark:text-slate-400 hover:text-primary" href="#">Privacy Policy</Link>

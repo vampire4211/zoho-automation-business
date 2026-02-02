@@ -186,3 +186,8 @@ Key Shared Components:
    - **Content**: Explicitly states data collection policies (Traffic Data, Form Submissions).
    - **Footer Link**: Added to components/Footer.tsx.
 
+### F. Rebranding to J&P Business Automation
+   - **Company Name**: Renamed from 'The Clear Architect' to 'J&P Business Automation'.
+   - **Global Updates**: Updated metadata, footer, terms page, and seed data.
+   - **Logo**: Updated with final user-provided logo design.
+

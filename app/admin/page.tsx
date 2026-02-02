@@ -4,7 +4,7 @@ import { desc, sql } from 'drizzle-orm';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Admin Dashboard | The Clear Architect',
+    title: 'Admin Dashboard | J&P Business Automation',
     robots: {
         index: false,
         follow: false,

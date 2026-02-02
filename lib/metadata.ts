@@ -2,36 +2,36 @@ import { Metadata } from 'next';
 
 // Site configuration
 export const siteConfig = {
-    name: 'The Clear Architect',
-    title: 'The Clear Architect - Mastering Complexity through Automation',
+    name: 'J&P Business Automation',
+    title: 'J&P Business Automation - Mastering Complexity through Automation',
     description: 'Enterprise-grade workflow automation solutions designed for modern global businesses. Streamline operations, reduce tasks by 60%, and scale efficiently.',
     url: process.env.NEXT_PUBLIC_SITE_URL || 'https://thecleararchitect.com',
     ogImage: '/og-image.png',
     links: {
-        twitter: 'https://twitter.com/thecleararchitect',
-        linkedin: 'https://linkedin.com/company/thecleararchitect',
+        twitter: 'https://twitter.com/jpbusinessautomation',
+        linkedin: 'https://linkedin.com/company/jpbusinessautomation',
     },
 };
 
 // Page-specific metadata
 export const pageMetadata = {
     home: {
-        title: 'The Clear Architect - Mastering Complexity through Automation',
+        title: 'J&P Business Automation - Mastering Complexity through Automation',
         description: 'Enterprise-grade workflow automation solutions designed for modern global businesses. Streamline operations, reduce tasks by 60%, and scale efficiently.',
         keywords: ['automation', 'workflow automation', 'business automation', 'Zoho', 'enterprise automation', 'process optimization'],
     },
     about: {
-        title: 'About Us - The Clear Architect',
-        description: 'Learn how The Clear Architect helps businesses master complexity through intelligent automation. Our mission, values, and commitment to excellence.',
+        title: 'About Us - J&P Business Automation',
+        description: 'Learn how J&P Business Automation helps businesses master complexity through intelligent automation. Our mission, values, and commitment to excellence.',
         keywords: ['about', 'company', 'mission', 'automation experts', 'business consulting'],
     },
     services: {
-        title: 'Automation Services - The Clear Architect',
+        title: 'Automation Services - J&P Business Automation',
         description: 'Comprehensive automation services including workflow audit, custom automation builds, and scalable solutions for businesses of all sizes.',
         keywords: ['automation services', 'workflow audit', 'custom automation', 'business solutions', 'consulting'],
     },
     portfolio: {
-        title: 'Portfolio & Case Studies - The Clear Architect',
+        title: 'Portfolio & Case Studies - J&P Business Automation',
         description: 'Explore our successful automation implementations. Real results from real businesses: 60% task reduction, $10M+ saved globally.',
         keywords: ['portfolio', 'case studies', 'success stories', 'automation examples', 'client results'],
     },
@@ -41,22 +41,22 @@ export const pageMetadata = {
         keywords: ['automation blog', 'workflow tips', 'business optimization', 'automation guides', 'industry insights'],
     },
     contact: {
-        title: 'Contact Us - The Clear Architect',
+        title: 'Contact Us - J&P Business Automation',
         description: 'Ready to transform your business with automation? Book a free audit and discover how we can help you reclaim your time and scale efficiently.',
         keywords: ['contact', 'book audit', 'consultation', 'get in touch', 'automation inquiry'],
     },
     careers: {
-        title: 'Careers - Join The Clear Architect Team',
+        title: 'Careers - Join J&P Business Automation Team',
         description: 'Join our team of automation experts. Explore career opportunities and help businesses master complexity through innovative solutions.',
         keywords: ['careers', 'jobs', 'hiring', 'automation jobs', 'join our team'],
     },
     privacy: {
-        title: 'Privacy Policy - The Clear Architect',
+        title: 'Privacy Policy - J&P Business Automation',
         description: 'Our commitment to protecting your privacy. Learn how we collect, use, and safeguard your personal information.',
         keywords: ['privacy policy', 'data protection', 'privacy', 'gdpr'],
     },
     cookies: {
-        title: 'Cookie Policy - The Clear Architect',
+        title: 'Cookie Policy - J&P Business Automation',
         description: 'Learn about how we use cookies to enhance your browsing experience and the choices you have.',
         keywords: ['cookie policy', 'cookies', 'tracking', 'privacy'],
     },
@@ -71,9 +71,9 @@ export function generatePageMetadata(page: keyof typeof pageMetadata): Metadata 
         title: pageData.title,
         description: pageData.description,
         keywords: pageData.keywords,
-        authors: [{ name: 'The Clear Architect' }],
-        creator: 'The Clear Architect',
-        publisher: 'The Clear Architect',
+        authors: [{ name: 'J&P Business Automation' }],
+        creator: 'J&P Business Automation',
+        publisher: 'J&P Business Automation',
         formatDetection: {
             email: false,
             address: false,
@@ -104,7 +104,7 @@ export function generatePageMetadata(page: keyof typeof pageMetadata): Metadata 
             title: pageData.title,
             description: pageData.description,
             images: [siteConfig.ogImage],
-            creator: '@thecleararchitect',
+            creator: '@jpbusinessautomation',
         },
         robots: {
             index: true,

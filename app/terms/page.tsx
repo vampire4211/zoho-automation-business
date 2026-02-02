@@ -2,7 +2,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Terms and Conditions | The Clear Architect",
+    title: "Terms and Conditions | J&P Business Automation",
     description: "Terms and conditions regarding data collection and usage.",
 };
 
@@ -16,7 +16,7 @@ export default function TermsPage() {
 
                 <div className="prose dark:prose-invert max-w-none space-y-6 text-slate-600 dark:text-slate-300">
                     <p>
-                        Welcome to The Clear Architect. By using our website, you acknowledge and agree to the following terms regarding data collection and usage:
+                        Welcome to J&P Business Automation. By using our website, you acknowledge and agree to the following terms regarding data collection and usage:
                     </p>
 
                     <div className="bg-slate-50 dark:bg-surface-dark p-6 rounded-lg border border-slate-200 dark:border-border-dark">

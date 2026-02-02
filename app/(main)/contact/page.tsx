@@ -426,11 +426,11 @@ function ContactContent() {
         <div className="mt-12 text-center">
           <p className="text-slate-gray dark:text-slate-400 mb-4">Or reach us directly at:</p>
           <div className="flex flex-wrap justify-center gap-6 text-primary">
-            <a href="mailto:info@zohoautomation.com" className="hover:text-primary-hover transition-colors">
-              📧 info@zohoautomation.com
+            <a href="mailto:support@jp-business-automation.in" className="hover:text-primary-hover transition-colors">
+              📧 support@jp-business-automation.in
             </a>
-            <a href="tel:+15550000000" className="hover:text-primary-hover transition-colors">
-              📞 +1 (555) 000-0000
+            <a href="mailto:info@jp-business-automation.in" className="hover:text-primary-hover transition-colors">
+              📧 info@jp-business-automation.in
             </a>
           </div>
         </div>
