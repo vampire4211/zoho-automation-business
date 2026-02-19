@@ -5,7 +5,7 @@ export const siteConfig = {
     name: 'J&P Business Automation',
     title: 'J&P Business Automation - Mastering Complexity through Automation',
     description: 'Enterprise-grade workflow automation solutions designed for modern global businesses. Streamline operations, reduce tasks by 60%, and scale efficiently.',
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://thecleararchitect.com',
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://jp-business-automation.in',
     ogImage: '/og-image.png',
     links: {
         twitter: 'https://twitter.com/jpbusinessautomation',

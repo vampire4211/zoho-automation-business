@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { getOrganizationSchema, getServiceSchema } from '@/lib/metadata';
 
 export default function Home() {
@@ -28,13 +29,13 @@ export default function Home() {
               </p>
             </div>
             <div className="flex flex-wrap gap-4 pt-4">
-              <a href="/contact" className="h-14 px-8 bg-primary hover:bg-primary/90 text-white text-base font-bold rounded-md transition-all flex items-center gap-2 border border-transparent">
+              <Link href="/contact" className="h-14 px-8 bg-primary hover:bg-primary/90 text-white text-base font-bold rounded-md transition-all flex items-center gap-2 border border-transparent">
                 Book Audit
                 <span className="material-symbols-outlined text-lg">arrow_forward</span>
-              </a>
-              <a href="/portfolio" className="h-14 px-8 bg-transparent border border-slate-200 dark:border-slate-700 hover:border-primary text-deep-navy dark:text-white hover:text-primary text-base font-bold rounded-md transition-all flex items-center justify-center">
+              </Link>
+              <Link href="/portfolio" className="h-14 px-8 bg-transparent border border-slate-200 dark:border-slate-700 hover:border-primary text-deep-navy dark:text-white hover:text-primary text-base font-bold rounded-md transition-all flex items-center justify-center">
                 View Case Studies
-              </a>
+              </Link>
             </div>
           </div>
           <div className="lg:col-span-5 relative">
@@ -127,9 +128,9 @@ export default function Home() {
         <div className="max-w-4xl mx-auto text-center flex flex-col gap-8">
           <h2 className="text-3xl md:text-5xl font-extrabold text-white leading-tight">Ready to reclaim your time?</h2>
           <div className="flex justify-center">
-            <a href="/contact" className="h-14 px-10 bg-white text-primary hover:bg-slate-50 text-base font-bold rounded-md transition-all border-none inline-flex items-center justify-center">
+            <Link href="/contact" className="h-14 px-10 bg-white text-primary hover:bg-slate-50 text-base font-bold rounded-md transition-all border-none inline-flex items-center justify-center">
               Schedule Your Free Audit
-            </a>
+            </Link>
           </div>
         </div>
       </section>
