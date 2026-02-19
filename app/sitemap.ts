@@ -1,7 +1,9 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://thecleararchitect.com';
+    const baseUrl =
+        process.env.NEXT_PUBLIC_SITE_URL ||
+        'https://jp-business-automation.in';
 
     const routes = [
         {
@@ -31,7 +33,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         {
             url: `${baseUrl}/blog`,
             lastModified: new Date(),
-            changeFrequency: 'daily' as const,
+            changeFrequency: 'weekly' as const,
             priority: 0.7,
         },
         {
@@ -43,7 +45,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         {
             url: `${baseUrl}/careers`,
             lastModified: new Date(),
-            changeFrequency: 'weekly' as const,
+            changeFrequency: 'monthly' as const,
             priority: 0.6,
         },
         {
