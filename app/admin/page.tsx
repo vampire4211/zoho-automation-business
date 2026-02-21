@@ -297,9 +297,10 @@ function AboutUsTab() {
         content: '',
         imageData: '',
         imagePreview: '',
-        reverse: false,
     });
 
+    // Position: 1-based. -1 means "append at end" (default, computed after fetch)
+    const [insertPosition, setInsertPosition] = useState<number>(-1);
     const [wordCount, setWordCount] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -307,13 +308,23 @@ function AboutUsTab() {
 
     const MAX_WORDS = 52;
 
+    // The resolved insert position (1-based)
+    const resolvedPosition = insertPosition === -1 ? sections.length + 1 : insertPosition;
+    // Auto zig-zag: odd position → reverse=0 (normal), even → reverse=1
+    const autoReverse = (resolvedPosition - 1) % 2 === 0 ? 'Normal (Text Left, Image Right)' : 'Reversed (Image Left, Text Right)';
+    const autoReverseValue = (resolvedPosition - 1) % 2;
+
     // Fetch existing sections
     const fetchSections = useCallback(() => {
         setLoadingSections(true);
         fetch('/api/admin/about')
             .then(res => res.json())
             .then(json => {
-                if (json.success) setSections(json.sections);
+                if (json.success) {
+                    setSections(json.sections);
+                    // Reset to "append at end" when sections reload
+                    setInsertPosition(-1);
+                }
             })
             .catch(console.error)
             .finally(() => setLoadingSections(false));
@@ -327,7 +338,6 @@ function AboutUsTab() {
         const words = val.trim().split(/\s+/).filter(Boolean);
 
         if (words.length > MAX_WORDS) {
-            // Allow typing but show warning; don't cut mid-word while typing
             const capped = words.slice(0, MAX_WORDS).join(' ');
             setForm(prev => ({ ...prev, content: capped }));
             setWordCount(MAX_WORDS);
@@ -346,7 +356,6 @@ function AboutUsTab() {
             setSubmitStatus({ type: 'error', message: 'Please upload a valid image file.' });
             return;
         }
-
         if (file.size > 5 * 1024 * 1024) {
             setSubmitStatus({ type: 'error', message: 'Image must be under 5MB.' });
             return;
@@ -400,7 +409,7 @@ function AboutUsTab() {
                     title: form.title.trim(),
                     content: form.content.trim(),
                     imageData: form.imageData,
-                    reverse: form.reverse,
+                    position: resolvedPosition,
                 }),
             });
 
@@ -410,8 +419,11 @@ function AboutUsTab() {
                 throw new Error(json.error || 'Failed to add section');
             }
 
-            setSubmitStatus({ type: 'success', message: '✅ Section added successfully! It will appear on the About Us page.' });
-            setForm({ title: '', content: '', imageData: '', imagePreview: '', reverse: false });
+            setSubmitStatus({
+                type: 'success',
+                message: `✅ Section added at position ${resolvedPosition} with ${autoReverseValue === 0 ? 'normal' : 'reversed'} layout!`,
+            });
+            setForm({ title: '', content: '', imageData: '', imagePreview: '' });
             setWordCount(0);
             if (fileInputRef.current) fileInputRef.current.value = '';
             fetchSections();
@@ -565,23 +577,91 @@ function AboutUsTab() {
                         />
                     </div>
 
-                    {/* Layout Toggle */}
-                    <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-600">
-                        <button
-                            type="button"
-                            onClick={() => setForm(prev => ({ ...prev, reverse: !prev.reverse }))}
-                            className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 ${form.reverse ? 'bg-blue-500' : 'bg-slate-300 dark:bg-slate-600'
-                                }`}
+                    {/* Position Selector */}
+                    <div className="space-y-3">
+                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                            Insert at Position
+                        </label>
+
+                        {/* Dropdown — 1..N to insert before an existing row; blank = append at end */}
+                        <select
+                            value={insertPosition === -1 ? '' : insertPosition}
+                            onChange={e => setInsertPosition(e.target.value === '' ? -1 : Number(e.target.value))}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/60 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
                         >
-                            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-200 ${form.reverse ? 'translate-x-5' : 'translate-x-0'}`} />
-                        </button>
-                        <div>
-                            <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Reverse Layout</p>
-                            <p className="text-xs text-slate-400">Image on left, text on right</p>
+                            <option value="">Append at end (default)</option>
+                            {sections.map((_, i) => (
+                                <option key={i + 1} value={i + 1}>
+                                    {i + 1} — before &quot;{sections[i]?.title || `Row ${i + 1}`}&quot;
+                                </option>
+                            ))}
+                        </select>
+
+                        {/* Auto layout info */}
+                        <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/50">
+                            <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white ${autoReverseValue === 0 ? 'bg-blue-500' : 'bg-purple-500'
+                                }`}>
+                                {resolvedPosition}
+                            </div>
+                            <div>
+                                <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">Auto Zig-Zag Layout</p>
+                                <p className="text-xs text-blue-600 dark:text-blue-400">{autoReverse}</p>
+                            </div>
+                            <div className="ml-auto flex gap-1 items-center">
+                                {/* mini zig-zag visual */}
+                                <div className={`w-5 h-3 rounded bg-blue-300 dark:bg-blue-600 ${autoReverseValue === 0 ? 'order-1' : 'order-2'}`} />
+                                <div className={`w-3 h-3 rounded bg-slate-300 dark:bg-slate-500 ${autoReverseValue === 0 ? 'order-2' : 'order-1'}`} />
+                            </div>
                         </div>
-                        <span className="ml-auto text-xs font-mono px-2 py-1 rounded bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300">
-                            {form.reverse ? 'ON' : 'OFF'}
-                        </span>
+
+                        {/* Visual order preview */}
+                        {sections.length > 0 && (
+                            <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                <div className="px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
+                                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Order Preview</p>
+                                </div>
+                                <div className="p-3 space-y-1.5 max-h-48 overflow-y-auto">
+                                    {Array.from({ length: sections.length + 1 }, (_, i) => i + 1).map(pos => {
+                                        const isInsertHere = pos === resolvedPosition;
+                                        // sections shifted: if pos >= resolvedPosition, show sections[pos-2], else sections[pos-1]
+                                        const existingIdx = pos < resolvedPosition ? pos - 1 : pos - 2;
+                                        const existingSection = pos !== resolvedPosition ? sections[existingIdx] : null;
+                                        const posReverse = (pos - 1) % 2;
+
+                                        return (
+                                            <div
+                                                key={pos}
+                                                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all ${isInsertHere
+                                                    ? 'bg-blue-500 text-white shadow-md shadow-blue-500/30 ring-2 ring-blue-400'
+                                                    : 'bg-slate-50 dark:bg-slate-700/40 text-slate-600 dark:text-slate-300'
+                                                    }`}
+                                            >
+                                                <span className={`w-5 h-5 rounded flex items-center justify-center font-bold flex-shrink-0 ${isInsertHere ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-400'
+                                                    }`}>{pos}</span>
+
+                                                {isInsertHere ? (
+                                                    <span className="font-semibold flex items-center gap-1.5">
+                                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                                                        NEW SECTION GOES HERE
+                                                    </span>
+                                                ) : (
+                                                    <span className="truncate flex-1">{existingSection?.title || '—'}</span>
+                                                )}
+
+                                                <span className={`ml-auto flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-mono ${isInsertHere
+                                                    ? 'bg-white/20 text-white'
+                                                    : posReverse === 0
+                                                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                                                        : 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
+                                                    }`}>
+                                                    {posReverse === 0 ? 'TXT→IMG' : 'IMG→TXT'}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Status message */}
