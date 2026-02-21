@@ -9,13 +9,13 @@ export default function Header() {
                     <div className="w-12 h-12 relative rounded-full overflow-hidden border-2 border-primary/20">
                         <Image
                             src="/images/logo.png"
-                            alt="J&P Zoho Business Automation"
+                            alt="J&P Business Automation"
                             fill
                             className="object-cover"
                             priority
                         />
                     </div>
-                    <h1 className="text-lg font-bold tracking-tight text-deep-navy dark:text-white">J&P Zoho Business Automation</h1>
+                    <h1 className="text-lg font-bold tracking-tight text-deep-navy dark:text-white">J&P Business Automation</h1>
                 </Link>
                 <nav className="hidden md:flex items-center gap-8">
                     <Link className="text-base font-medium text-slate-gray dark:text-slate-300 hover:text-primary transition-colors" href="/">Home</Link>
